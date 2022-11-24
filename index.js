@@ -13,8 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 
-
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.twtll.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ilc8iz8.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 function verifyJWT(req, res, next) {
@@ -39,23 +38,9 @@ function verifyJWT(req, res, next) {
 
 async function run() {
     try {
-        const appointmentOptionCollection = client.db('doctorsPortal').collection('appointmentOptions');
-        const bookingsCollection = client.db('doctorsPortal').collection('bookings');
-        const usersCollection = client.db('doctorsPortal').collection('users');
-        const doctorsCollection = client.db('doctorsPortal').collection('doctors');
-        const paymentsCollection = client.db('doctorsPortal').collection('payments');
-
-
-
-
-
-
-
-
-
-
-
-
+        const usersCollection = client.db('bicycleKeeper').collection('users');
+        const productsCollection = client.db('bicycleKeeper').collection('products');
+        const catagoryCollection = client.db('bicycleKeeper').collection('catagory');
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -68,17 +53,30 @@ async function run() {
             res.status(403).send({ accessToken: '' })
         });
 
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const users = await usersCollection.find(query).toArray();
+            res.send(users);
+        });
 
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const result = await usersCollection.insertOne(user);
+            res.send(result);
+        });
 
+        app.post('/products', verifyJWT, async (req, res) => {
+            const doctor = req.body;
+            const result = await productsCollection.insertOne(doctor);
+            res.send(result);
+        });
 
-
-
-
-
-
-
-
-
+        app.get('/catagories', async (req, res) => {
+            const query = {};
+            const result = await catagoryCollection.find(query).toArray();
+            req.send(result)
+        })
 
     }
     finally {
@@ -88,7 +86,7 @@ async function run() {
 run().catch(console.log);
 
 app.get('/', async (req, res) => {
-    res.send('BiCycel Keeper server is running');
+    res.send('BiCycle Keeper server is running');
 })
 
 app.listen(port, () => console.log(`BiCycle Keeper running on ${port}`))
