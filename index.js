@@ -40,14 +40,14 @@ async function run() {
     try {
         const usersCollection = client.db('bicycleKeeper').collection('users');
         const productsCollection = client.db('bicycleKeeper').collection('products');
-        const catagoryCollection = client.db('bicycleKeeper').collection('catagory');
+        const catagoryCollection = client.db('bicycleKeeper').collection('catagories');
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
             const user = await usersCollection.findOne(query);
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '10h' })
                 return res.send({ accessToken: token });
             }
             res.status(403).send({ accessToken: '' })
@@ -61,23 +61,28 @@ async function run() {
 
         app.post('/users', async (req, res) => {
             const user = req.body;
-            console.log(user);
             const result = await usersCollection.insertOne(user);
             res.send(result);
         });
 
         app.post('/products', verifyJWT, async (req, res) => {
-            const doctor = req.body;
-            const result = await productsCollection.insertOne(doctor);
+            const product = req.body;
+            const result = await productsCollection.insertOne(product);
             res.send(result);
         });
 
         app.get('/catagories', async (req, res) => {
             const query = {};
             const result = await catagoryCollection.find(query).toArray();
-            req.send(result)
+            res.send(result)
         })
 
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.role === 'seller' });
+        })
     }
     finally {
 
