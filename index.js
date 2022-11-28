@@ -213,6 +213,42 @@ async function run() {
             res.send(result);
         });
 
+        app.delete('/reported-products/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await reportssCollection.deleteOne(filter);
+            res.send(result);
+        });
+        app.get('/veryfied/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            console.log(email)
+            const result = await usersCollection.findOne({ email: email });
+            if (result?.status === 'Veryfied') {
+                res.send(result);
+            }
+            else {
+                return;
+            }
+        });
+
+
+
+        app.post('/advertisements', verifyJWT, async (req, res) => {
+            const ad = req.body;
+            const result = await advertisementsCollection.insertOne(ad);
+            res.send(result);
+        });
+
+        app.get('/advertisements', async (req, res) => {
+            const query = {};
+            const result = await advertisementsCollection.find(query).sort({ _id: -1 }).toArray();
+            res.send(result);
+        });
+
+
+
+
+
     }
     finally {
 
