@@ -46,6 +46,7 @@ async function run() {
         const ordersCollection = client.db('bicycleKeeper').collection('orders');
         const advertisementsCollection = client.db('bicycleKeeper').collection('advertisements');
         const paymentsCollection = client.db('bicycleKeeper').collection('payments');
+        const reportsCollection = client.db('bicycleKeeper').collection('reports');
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -216,11 +217,22 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         });
+        app.post('/report-items', verifyJWT, async (req, res) => {
+            const product = req.body;
+            const result = await reportsCollection.insertOne(product);
+            res.send(result);
+        });
+
+        app.get('/reports', async (req, res) => {
+            const product = req.body;
+            const result = await reportsCollection.find(product).toArray();
+            res.send(result);
+        });
 
         app.delete('/reported-products/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
-            const result = await reportssCollection.deleteOne(filter);
+            const result = await reportsCollection.deleteOne(filter);
             res.send(result);
         });
         app.get('/veryfied/seller/:email', async (req, res) => {
@@ -235,7 +247,12 @@ async function run() {
             }
         });
 
-
+        app.delete('/products/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await productsCollection.deleteOne(filter);
+            res.send(result);
+        });
 
         app.post('/advertisements', verifyJWT, async (req, res) => {
             const ad = req.body;
